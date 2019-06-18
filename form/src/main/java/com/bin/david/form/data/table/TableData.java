@@ -40,6 +40,17 @@ public class TableData<T> {
     private OnItemClickListener onItemClickListener;
     private OnRowClickListener<T> onRowClickListener;
     private OnColumnClickListener<?> onColumnClickListener;
+    private List<Cell> trendPoints; //趋势点 int[] = int row,int col
+    private List<Cell> trendPoints2; //趋势点 int[] = int row,int col
+    private List<Cell> trendPoints3; //趋势点 int[] = int row,int col
+    private List<Cell> trendPoints4; //趋势点 int[] = int row,int col
+    private List<Cell> trendPoints5; //趋势点 int[] = int row,int col
+    private List<Cell> trendPoints6; //趋势点 int[] = int row,int col
+    private List<Cell> trendPoints7; //趋势点 int[] = int row,int col
+    private List<Cell> textColorPointList; //特别点的字体颜色点集合
+    private List<Cell> textColorPointList2; //特别点的字体颜色点集合
+    private List<Cell> rightTopCornerList; //右上角角标集合点
+    private List<Cell> histogramCellList; //柱状图集合点
 
     /**
      *
@@ -77,6 +88,7 @@ public class TableData<T> {
         childColumnInfos = new ArrayList<>();
         //cellRangeAddresses = new ArrayList<>();
         this.titleDrawFormat = titleDrawFormat == null?new TitleDrawFormat() :titleDrawFormat;
+        trendPoints = new ArrayList<>(); //趋势点
     }
 
 
@@ -286,6 +298,67 @@ public class TableData<T> {
         return null;
     }
 
+    public List<Cell> getTrendPoints() {
+        return trendPoints;
+    }
+
+    public Cell getTrendPoint(int row, int col) {
+        return getCell(row, col, trendPoints);
+    }
+
+    public Cell getTrendPoint2(int row, int col) {
+        return getCell(row, col, trendPoints);
+    }
+
+    public Cell getTrendPoint3(int row, int col) {
+        return getCell(row, col, trendPoints);
+    }
+
+    public Cell getTrendPoint4(int row, int col) {
+        return getCell(row, col, trendPoints);
+    }
+
+    public Cell getTrendPoint5(int row, int col) {
+        return getCell(row, col, trendPoints);
+    }
+
+    public Cell getTrendPoint6(int row, int col) {
+        return getCell(row, col, trendPoints);
+    }
+
+    public Cell getTrendPoint7(int row, int col) {
+        return getCell(row, col, trendPoints);
+    }
+
+    public Cell getTextColorPoint(int row, int col) {
+        return getCell(row, col, textColorPointList);
+    }
+
+    public Cell getTextColorPoint2(int row, int col) {
+        return getCell(row, col, textColorPointList2);
+    }
+
+    public Cell getRightTopCornerPoint(int row, int col) {
+        return getCell(row, col, rightTopCornerList);
+    }
+
+    public Cell getHistogramCell(int row, int col) {
+        return getCell(row, col, histogramCellList);
+    }
+
+    public void setTrendPoints(List<Cell> trendPoints) {
+        this.trendPoints = trendPoints;
+    }
+
+    public void addTrendPoints(Cell point){
+        if (trendPoints == null) {
+            trendPoints = new ArrayList<>();
+        }
+        if (trendPoints != null && point != null) {
+            trendPoints.add(point);
+        }
+    }
+
     /**
      * 获取行数
      * @return 行数
@@ -384,11 +457,40 @@ public class TableData<T> {
             tableInfo.clear();
             tableInfo = null;
         }
+        if (trendPoints != null){
+            trendPoints.clear();
+        }
         sortColumn = null;
         titleDrawFormat = null;
         XSequenceFormat=null;
         YSequenceFormat = null;
 
+    }
+
+    public static boolean isTrendPoint(int row, int col, List<Cell> trentPoints){
+        return isInCell(row, col, trentPoints);
+    }
+
+    public static boolean isInCell(int row, int col, List<Cell> points){
+        if (points != null){
+            for (Cell point : points){
+                if (point.isInCell(row, col)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static Cell getCell(int row, int col, List<Cell> points){
+        if (points != null){
+            for (Cell point : points){
+                if (point.isInCell(row, col)){
+                    return point;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -474,5 +576,85 @@ public class TableData<T> {
 
     public interface OnColumnClickListener<T>{
         void onClick(Column column, List<T> t, int col,int row);
+    }
+
+    public List<Cell> getTextColorPointList() {
+        return textColorPointList;
+    }
+
+    public void setTextColorPointList(List<Cell> textColorPointList) {
+        this.textColorPointList = textColorPointList;
+    }
+
+    public List<Cell> getTextColorPointList2() {
+        return textColorPointList2;
+    }
+
+    public void setTextColorPointList2(List<Cell> textColorPointList2) {
+        this.textColorPointList2 = textColorPointList2;
+    }
+
+    public List<Cell> getRightTopCornerList() {
+        return rightTopCornerList;
+    }
+
+    public void setRightTopCornerList(List<Cell> rightTopCornerList) {
+        this.rightTopCornerList = rightTopCornerList;
+    }
+
+    public List<Cell> getTrendPoints2() {
+        return trendPoints2;
+    }
+
+    public void setTrendPoints2(List<Cell> trendPoints2) {
+        this.trendPoints2 = trendPoints2;
+    }
+
+    public List<Cell> getTrendPoints3() {
+        return trendPoints3;
+    }
+
+    public void setTrendPoints3(List<Cell> trendPoints3) {
+        this.trendPoints3 = trendPoints3;
+    }
+
+    public List<Cell> getTrendPoints4() {
+        return trendPoints4;
+    }
+
+    public void setTrendPoints4(List<Cell> trendPoints4) {
+        this.trendPoints4 = trendPoints4;
+    }
+
+    public List<Cell> getTrendPoints5() {
+        return trendPoints5;
+    }
+
+    public void setTrendPoints5(List<Cell> trendPoints5) {
+        this.trendPoints5 = trendPoints5;
+    }
+
+    public List<Cell> getTrendPoints6() {
+        return trendPoints6;
+    }
+
+    public void setTrendPoints6(List<Cell> trendPoints6) {
+        this.trendPoints6 = trendPoints6;
+    }
+
+    public List<Cell> getTrendPoints7() {
+        return trendPoints7;
+    }
+
+    public void setTrendPoints7(List<Cell> trendPoints7) {
+        this.trendPoints7 = trendPoints7;
+    }
+
+    public List<Cell> getHistogramCellList() {
+        return histogramCellList;
+    }
+
+    public void setHistogramCellList(List<Cell> histogramCellList) {
+        this.histogramCellList = histogramCellList;
     }
 }

@@ -12,19 +12,26 @@ import android.widget.Toast;
 
 import com.bin.david.form.core.SmartTable;
 import com.bin.david.form.core.TableConfig;
+import com.bin.david.form.data.Cell;
 import com.bin.david.form.data.CellInfo;
+import com.bin.david.form.data.CellRightTopCorner;
 import com.bin.david.form.data.column.Column;
 import com.bin.david.form.data.column.ColumnInfo;
 import com.bin.david.form.data.format.bg.BaseBackgroundFormat;
 import com.bin.david.form.data.table.PageTableData;
 import com.bin.david.form.data.format.IFormat;
+import com.bin.david.form.data.format.bg.BaseBackgroundFormat;
 import com.bin.david.form.data.format.bg.BaseCellBackgroundFormat;
+import com.bin.david.form.data.format.bg.BaseCellHistogramBackgroundFormat;
+import com.bin.david.form.data.format.bg.BaseCellTrendCirclePointBackgroundFormat;
 import com.bin.david.form.data.format.count.ICountFormat;
 import com.bin.david.form.data.format.draw.ImageResDrawFormat;
 import com.bin.david.form.data.format.draw.TextImageDrawFormat;
 import com.bin.david.form.data.format.tip.MultiLineBubbleTip;
 import com.bin.david.form.data.format.title.TitleImageDrawFormat;
 import com.bin.david.form.data.style.FontStyle;
+import com.bin.david.form.data.table.PageTableData;
+import com.bin.david.form.data.table.TableData;
 import com.bin.david.form.listener.OnColumnClickListener;
 import com.bin.david.form.listener.OnColumnItemClickListener;
 import com.bin.david.form.utils.DensityUtils;
@@ -53,6 +60,7 @@ public class PagerModeActivity extends AppCompatActivity implements View.OnClick
 
     private SmartTable<UserInfo> table;
     private PageTableData<UserInfo> tableData;
+    private List<Cell> trentPoints;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,9 +73,10 @@ public class PagerModeActivity extends AppCompatActivity implements View.OnClick
             testData.add(new UserInfo("用户"+i, random.nextInt(70), System.currentTimeMillis()
                     - random.nextInt(70)*3600*1000*24,true,new ChildData("测试"+i)));
         }
-
+        testData.get(0).setName("用户用户用户用户用户用");
         final Column<String> nameColumn = new Column<>("姓名", "name");
         nameColumn.setAutoCount(true);
+        nameColumn.setFixed(true);
         final Column<Integer> ageColumn = new Column<>("年龄", "age");
         ageColumn.setAutoCount(true);
         Column<String> column4 = new Column<>("测试多重查询", "childData.child");
@@ -281,8 +290,81 @@ public class PagerModeActivity extends AppCompatActivity implements View.OnClick
                 return TableConfig.INVALID_COLOR;
             }
         });
+        table.getConfig().setTrendPointTextColor(ContextCompat.getColor(PagerModeActivity.this, R.color.white));
+        table.getConfig().setPointListTextColor(ContextCompat.getColor(PagerModeActivity.this, R.color.white));
+        trentPoints = new ArrayList<>();
+        ArrayList cornerPoints = new ArrayList<>();
+        for (int i=0; i< 8; i++){
+            Cell point = new Cell((int)(Math.random()*8), i);
+            if (i % 2 == 0) {
+                CellRightTopCorner rightTopCorner = new CellRightTopCorner();
+                rightTopCorner.rightTopValue = "2";
+                point.rightTopCorner = rightTopCorner;
+                cornerPoints.add(point);
+            }
+            trentPoints.add(point);
+            if (i-1 >= 0 ){
+                point.prevCell = trentPoints.get(i-1);
+                trentPoints.get(i-1).nextCell = point;
+            }
+        }
+        List<Cell> textColorPointList = new ArrayList<>();
+        for (int i=0; i< 8; i++){
+            //int[] point = new int[2];
+            Cell point = new Cell((int)(Math.random()*8), i);
+            /*point[0] = i;
+            point[1] = (int)(Math.random()*8);*/
+            textColorPointList.add(point);
+            if (i-1 >= 0 ){
+                point.prevCell = textColorPointList.get(i-1);
+                textColorPointList.get(i-1).nextCell = point;
+            }
+        }
+        tableData.setTrendPoints(trentPoints);
+        //tableData.setTrendColor(Color.parseColor("#FF0000"));
+        table.getConfig().setTrendLineColor(Color.parseColor("#FF0000"));
+        tableData.setRightTopCornerList(cornerPoints);
+        table.getConfig().setContentCellTendBackgroundFormat(new BaseCellTrendCirclePointBackgroundFormat<CellInfo>() {
+            @Override
+            public int getBackGroundColor(CellInfo cellInfo) {
+                if(TableData.isTrendPoint(cellInfo.row, cellInfo.col, trentPoints)) {
+                    return Color.parseColor("#FF0000");
+                }
+                return TableConfig.INVALID_COLOR;
+            }
 
+            @Override
+            public int getCornerBackGroundColor(CellInfo cellInfo) {
+                if(TableData.isTrendPoint(cellInfo.row, cellInfo.col, trentPoints)) {
+                    return Color.parseColor("#0000FF");
+                }
+                return TableConfig.INVALID_COLOR;
+            }
+        });
+        /*table.getConfig().setContentCellTendBackgroundFormat(new BaseCellTrendRectPointBackgroundFormat<CellInfo>() {
+            @Override
+            public int getBackGroundColor(CellInfo cellInfo) {
+                if(TableData.isTrendPoint(cellInfo.row, cellInfo.col, trentPoints)) {
+                    return Color.parseColor("#FF0000");
+                }
+                return TableConfig.INVALID_COLOR;
+            }
+        });*/
+        table.getConfig().setHistogramCellBackgroundFormat(new BaseCellHistogramBackgroundFormat<CellInfo>() {
+            @Override
+            public int getBackGroundColor(CellInfo cellInfo) {
+                return 0;
+            }
+
+            @Override
+            public float getHistogramValue(CellInfo cellInfo) {
+                return 0;
+            }
+        });
         tableData.setPageSize(9);
+        //tableData.setTextColorPointList(trentPoints);
+        tableData.setTextColorPointList(textColorPointList);
+        table.getConfig().setPointListTextColor(Color.parseColor("#FF8800"));
         table.setTableData(tableData);
 
     }

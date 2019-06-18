@@ -2,12 +2,17 @@ package com.bin.david.form.component;
 
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 
 import com.bin.david.form.core.TableConfig;
+import com.bin.david.form.data.Cell;
 import com.bin.david.form.data.CellInfo;
+import com.bin.david.form.data.CellRightTopCorner;
+import com.bin.david.form.data.TableInfo;
 import com.bin.david.form.data.column.Column;
 import com.bin.david.form.data.column.ColumnInfo;
 import com.bin.david.form.data.TableInfo;
@@ -20,6 +25,7 @@ import com.bin.david.form.listener.OnColumnClickListener;
 import com.bin.david.form.listener.TableClickObserver;
 import com.bin.david.form.utils.DrawUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,6 +57,8 @@ public class TableProvider<T> implements TableClickObserver {
     private PointF tipPoint = new PointF();
     private IDrawOver drawOver;
     private CellInfo cellInfo = new CellInfo();
+    private List<CellInfo> trendCellInfoList = new ArrayList<>();
+    private List<Rect> trendRectList = new ArrayList<>();
 
     public TableProvider() {
 
@@ -266,6 +274,8 @@ public class TableProvider<T> implements TableClickObserver {
      * @param canvas 画布
      */
     private void drawContent(Canvas canvas) {
+        trendCellInfoList.clear();
+        trendRectList.clear();
         float top;
         float left = scaleRect.left;
         List<Column> columns = tableData.getChildColumns();
@@ -287,6 +297,7 @@ public class TableProvider<T> implements TableClickObserver {
         boolean isPerFixed = false;
         int clipCount = 0;
         Rect correctCellRect;
+        Rect tempCellRect;
         TableInfo tableInfo = tableData.getTableInfo();
         for (int i = 0; i < columnSize; i++) {
             top = scaleRect.top;
@@ -323,7 +334,7 @@ public class TableProvider<T> implements TableClickObserver {
                     realPosition+=skip;
                     float bottom = top + totalLineHeight*config.getZoom();
                     tempRect.set((int) left, (int) top, (int) right, (int) bottom);
-                    correctCellRect = gridDrawer.correctCellRect(j, i, tempRect, config.getZoom()); //矫正格子的大小
+                    correctCellRect = tempCellRect = gridDrawer.correctCellRect(j, i, tempRect, config.getZoom()); //矫正格子的大小
                     if (correctCellRect != null) {
                     if (correctCellRect.top < showRect.bottom) {
                         if (correctCellRect.right > showRect.left && correctCellRect.bottom > showRect.top) {
@@ -339,9 +350,15 @@ public class TableProvider<T> implements TableClickObserver {
                                     clickPoint.set(-Integer.MAX_VALUE, -Integer.MAX_VALUE);
                                 }
                                 operation.checkSelectedPoint(i, j, correctCellRect);
-                                cellInfo.set(column,data,value,i,j);
-                                drawContentCell(canvas,cellInfo,correctCellRect,config);
-
+                                cellInfo.set(column, data, value, i, j, tableData.getTrendPoint(j, i), tableData.getTextColorPoint(j, i), tableData.getRightTopCornerPoint(j, i), tableData.getTextColorPoint2(j, i), tableData.getHistogramCell(j, i));
+                                /*if (trendPoint != null){
+                                    CellInfo trendCellInfo = new CellInfo();
+                                    trendCellInfo.set(column,data,value,i,j, trendPoint);
+                                    trendCellInfoList.add(trendCellInfo);
+                                    trendRectList.add(tempCellRect);
+                                }*/
+                                drawContentCell(canvas, cellInfo, correctCellRect, config);
+//                                drawContentCellWithoutTrend(canvas,cellInfo,correctCellRect,config);
                             }
                         } else {
                             break;
@@ -354,7 +371,13 @@ public class TableProvider<T> implements TableClickObserver {
                 break;
             }
         }
-        for(int i = 0;i < clipCount;i++){
+        drawTrendLine(canvas);
+        /*int size = trendCellInfoList.size();
+        for (int i=0; i<size; i++){
+            CellInfo cellInfo = trendCellInfoList.get(i);
+            drawContentCellOnlyTrend(canvas, cellInfo, trendRectList.get(i), config);
+        }*/
+        for (int i = 0; i < clipCount; i++) {
             canvas.restore();
         }
         if (config.isFixedCountRow()) {
@@ -363,8 +386,166 @@ public class TableProvider<T> implements TableClickObserver {
     }
 
     /**
-     *绘制内容格子
-     * @param c 画布
+     * 绘制趋势图
+     * 首先要准备好的趋势坐标点（即趋势点的横纵index值），根据这个些坐标点再画出趋势图
+     *
+     * @param canvas 画布
+     */
+    private void drawTrendLine(Canvas canvas) {
+        /*if (tableData != null) {
+            List<Cell> trendPoints = tableData.getTrendPoints();
+            int cellHeight = 0;
+            if (trendPoints != null) {
+                Paint paint = new Paint();             // 创建画笔
+                if (tableData.getTrendColor() != 0) {
+                    paint.setColor(tableData.getTrendColor());           // 画笔颜色 - 黑色
+                }
+                int length = trendPoints.size();
+                Path path = new Path();
+                //List<int[]> centerPoints = new ArrayList<>();
+                for (int i = 0; i < length; i++) {
+                    Cell point = trendPoints.get(i);
+                    if (point != null) {
+                        int[] location = getPointLocation(point.row, point.col);
+                        int[] size = getPointSize(point.row, point.col);
+                        if (cellHeight == 0) {
+                            cellHeight = (int) (size[1] / 3.0f);
+                        }
+                        int[] center = new int[]{location[0] - size[0] / 2, location[1] - size[1] / 2};
+                        if (i == 0) {
+                            path.moveTo(center[0], center[1]);
+                        } else {
+                            path.lineTo(center[0], center[1]);
+                        }
+                    }
+                }
+                paint.setStrokeWidth(2);              // 边框宽度 - 10
+                paint.setStyle(Paint.Style.STROKE);    // 填充模式 - 描边
+                canvas.save();
+                canvas.drawPath(path, paint);
+                canvas.restore();
+            }
+        }*/
+        drawTrendLine1(canvas, tableData);
+        drawTrendLine2(canvas, tableData);
+        drawTrendLine3(canvas, tableData);
+        drawTrendLine4(canvas, tableData);
+        drawTrendLine5(canvas, tableData);
+        drawTrendLine6(canvas, tableData);
+        drawTrendLine7(canvas, tableData);
+    }
+
+    private void drawTrendLine1(Canvas canvas, TableData<T> tableData) {
+        if (canvas != null && tableData != null){
+            drawTrendLine(canvas, tableData.getTrendPoints(), config.getTrendLineColor());
+        }
+    }
+
+    private void drawTrendLine2(Canvas canvas, TableData<T> tableData) {
+        if (canvas != null && tableData != null){
+            drawTrendLine(canvas, tableData.getTrendPoints2(), config.getTrendLineColor2());
+        }
+    }
+
+    private void drawTrendLine3(Canvas canvas, TableData<T> tableData) {
+        if (canvas != null && tableData != null){
+            drawTrendLine(canvas, tableData.getTrendPoints3(), config.getTrendLineColor3());
+        }
+    }
+
+    private void drawTrendLine4(Canvas canvas, TableData<T> tableData) {
+        if (canvas != null && tableData != null){
+            drawTrendLine(canvas, tableData.getTrendPoints4(), config.getTrendLineColor4());
+        }
+    }
+
+    private void drawTrendLine5(Canvas canvas, TableData<T> tableData) {
+        if (canvas != null && tableData != null){
+            drawTrendLine(canvas, tableData.getTrendPoints5(), config.getTrendLineColor5());
+        }
+    }
+
+    private void drawTrendLine6(Canvas canvas, TableData<T> tableData) {
+        if (canvas != null && tableData != null){
+            drawTrendLine(canvas, tableData.getTrendPoints6(), config.getTrendLineColor6());
+        }
+    }
+
+    private void drawTrendLine7(Canvas canvas, TableData<T> tableData) {
+        if (canvas != null && tableData != null){
+            drawTrendLine(canvas, tableData.getTrendPoints7(), config.getTrendLineColor7());
+        }
+    }
+
+    private void drawTrendLine(Canvas canvas, List<Cell> trendPoints, int trendColor) {
+        if (trendPoints != null) {
+            Paint paint = new Paint();             // 创建画笔
+            if (trendColor != 0) {
+                paint.setColor(trendColor);           // 画笔颜色 - 黑色
+            }
+            int length = trendPoints.size();
+            Path path = new Path();
+            //List<int[]> centerPoints = new ArrayList<>();
+            for (int i = 0; i < length; i++) {
+                Cell point = trendPoints.get(i);
+                if (point != null) {
+                    int[] location = getPointLocation(point.row, point.col);
+                    int[] size = getPointSize(point.row, point.col);
+                    int[] center = new int[]{location[0] - size[0] / 2, location[1] - size[1] / 2};
+                    if (i == 0) {
+                        path.moveTo(center[0], center[1]);
+                    } else {
+                        path.lineTo(center[0], center[1]);
+                    }
+                }
+            }
+            paint.setStrokeWidth(2);              // 边框宽度 - 10
+            paint.setStyle(Paint.Style.STROKE);    // 填充模式 - 描边
+            canvas.save();
+            canvas.drawPath(path, paint);
+            canvas.restore();
+        }
+    }
+
+    /*private void drawTrendLine(Cell point, Canvas canvas) {
+        if (point != null) {
+            Cell prevCell = point.prevCell;
+            if (prevCell != null) {
+                int[] locationPrev = getPointLocation(prevCell.row, prevCell.col);
+                int[] sizePrev = getPointSize(prevCell.row, prevCell.col);
+                int[] centerPrev = new int[]{locationPrev[0] - sizePrev[0] / 2, locationPrev[1] - sizePrev[1] / 2};
+
+                int[] location = getPointLocation(point.row, point.col);
+                int[] size = getPointSize(point.row, point.col);
+                int[] center = new int[]{location[0] - size[0] / 2, location[1] - size[1] / 2};
+
+                Path path = new Path();
+                path.moveTo(centerPrev[0], centerPrev[1]);
+                path.lineTo(center[0], center[1]);
+                Cell nextCell = point.nextCell;
+                if (nextCell != null) {
+                    int[] locationNext = getPointLocation(nextCell.row, nextCell.col);
+                    int[] sizeNext = getPointSize(nextCell.row, nextCell.col);
+                    int[] centerNext = new int[]{locationNext[0] - sizeNext[0] / 2, locationNext[1] - sizeNext[1] / 2};
+                    path.lineTo(centerNext[0], centerNext[1]);
+                }
+                Paint paint = new Paint();             // 创建画笔
+                if (tableData.getTrendColor() != 0) {
+                    paint.setColor(tableData.getTrendColor());           // 画笔颜色 - 黑色
+                }
+                paint.setStrokeWidth(2);              // 边框宽度 - 10
+                paint.setStyle(Paint.Style.STROKE);    // 填充模式 - 描边
+                canvas.save();
+                canvas.drawPath(path, paint);
+                canvas.restore();
+            }
+        }
+    }
+*/
+    /**
+     * 绘制内容格子
+     *
+     * @param c        画布
      * @param cellInfo 格子信息
      * @param rect 方位
      * @param config 表格配置
@@ -374,12 +555,72 @@ public class TableProvider<T> implements TableClickObserver {
         if(config.getContentCellBackgroundFormat()!= null){
             config.getContentCellBackgroundFormat().drawBackground(c,rect,cellInfo,config.getPaint());
         }
-        if(config.getTableGridFormat() !=null){
+        //drawTrendLine(cellInfo.trendPoint, c);
+        if (config.getContentCellTendBackgroundFormat() != null) {
+            config.getContentCellTendBackgroundFormat().drawBackground(c, rect, cellInfo, config.getPaint());
+        }
+        if (config.getHistogramCellBackgroundFormat() != null && cellInfo.histogramCell != null){
+            config.getHistogramCellBackgroundFormat().drawBackground(c, rect, cellInfo, config.getPaint());
+        }
+        if (config.getTableGridFormat() != null) {
             config.getContentGridStyle().fillPaint(config.getPaint());
             config.getTableGridFormat().drawContentGrid(c,cellInfo.col,cellInfo.row,rect,cellInfo,config.getPaint());
         }
-        rect.left += config.getTextLeftOffset();
-        cellInfo.column.getDrawFormat().draw(c,rect, cellInfo,  config);
+        Rect rect2 = new Rect(rect);
+        if (!(config.getHistogramCellBackgroundFormat() != null && cellInfo.histogramCell != null)) {
+            rect.left += config.getTextLeftOffset();
+            cellInfo.column.getDrawFormat().draw(c, rect, cellInfo, config);
+        }
+        if (cellInfo.rightTopPoint != null && cellInfo.rightTopPoint.rightTopCorner != null) {
+            drawCornerText(c, cellInfo.rightTopPoint.rightTopCorner, rect2, config.getPaint());
+        }
+    }
+
+    protected void drawCornerText(Canvas c, CellRightTopCorner rightTopCorner, Rect rect, Paint paint) {
+        if (rightTopCorner.rightTopValue != null) {
+            int oldColor = paint.getColor();
+            float oldTextSize = paint.getTextSize();
+            float newTextSize = oldTextSize - 8 > 0 ? oldTextSize - 8 : oldTextSize;
+            int width = rect.width();
+            int height = rect.height();
+            int colorCornerBg = Color.parseColor("#0000FF");//背景默认颜色为蓝色
+            int colorCornerText = Color.parseColor("#FFFFFF");//字体默认颜色为白色
+            if (rightTopCorner.rightTopCornerBackgroundColor != TableConfig.INVALID_COLOR) {
+                colorCornerBg = rightTopCorner.rightTopCornerBackgroundColor;
+            }
+            if (rightTopCorner.rightTopCornerTextColor != TableConfig.INVALID_COLOR) {
+                colorCornerText = rightTopCorner.rightTopCornerTextColor;
+            }
+            float radius = width > height ? height * 0.45f : width * 0.45f;
+            if (colorCornerBg != TableConfig.INVALID_COLOR) {
+                paint.setColor(colorCornerBg);
+                paint.setStyle(Paint.Style.FILL);
+                paint.setTextSize(newTextSize);
+                float cornerRadius = width > height ? height * 0.2f : width * 0.2f;
+                float newRadius = radius + cornerRadius - 8 > 0 ? radius + cornerRadius - 8 : radius + cornerRadius;
+                float delta = (float) (newRadius * Math.sin(45 * Math.PI / 180));
+                float cx = rect.centerX() + delta;
+                float cy = rect.centerY() - delta;
+                c.drawCircle(rect.centerX() + delta, rect.centerY() - delta, cornerRadius, paint);
+                paint.setColor(colorCornerText);
+                Rect cornerRect = new Rect((int) (cx - cornerRadius), (int) (cy - cornerRadius), (int) (cx + cornerRadius), (int) (cy + cornerRadius));
+                DrawUtils.drawSingleText(c, paint, cornerRect, rightTopCorner.rightTopValue);
+                paint.setColor(oldColor);
+                paint.setTextSize(oldTextSize);
+            }
+        }
+    }
+
+    protected void drawContentCellWithoutTrend(Canvas c, CellInfo<T> cellInfo, Rect rect, TableConfig config) {
+        if (cellInfo.trendPoint == null) {
+            drawContentCell(c, cellInfo, rect, config);
+        }
+    }
+
+    protected void drawContentCellOnlyTrend(Canvas c, CellInfo<T> cellInfo, Rect rect, TableConfig config) {
+        if (cellInfo.trendPoint != null) {
+            drawContentCell(c, cellInfo, rect, config);
+        }
     }
 
     /**

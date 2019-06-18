@@ -8,6 +8,7 @@ import com.bin.david.form.data.format.grid.BaseAbstractGridFormat;
 import com.bin.david.form.data.format.bg.IBackgroundFormat;
 import com.bin.david.form.data.format.bg.ICellBackgroundFormat;
 import com.bin.david.form.data.format.grid.BaseGridFormat;
+import com.bin.david.form.data.format.draw.LeftTopDrawFormat;
 import com.bin.david.form.data.format.grid.IGridFormat;
 import com.bin.david.form.data.format.draw.LeftTopDrawFormat;
 import com.bin.david.form.data.format.grid.SimpleGridFormat;
@@ -153,6 +154,14 @@ public class TableConfig {
      */
     private ICellBackgroundFormat<CellInfo> contentCellBackgroundFormat;
     /**
+     * 内容格子进行趋势图背景格式化
+     */
+    private ICellBackgroundFormat<CellInfo> contentCellTendBackgroundFormat;
+    /**
+     * 柱状图格式化
+     */
+    private ICellBackgroundFormat<CellInfo> histogramCellBackgroundFormat;
+    /**
      * 标题格子背景格式化
      */
     private ICellBackgroundFormat<Column> columnCellBackgroundFormat;
@@ -212,6 +221,29 @@ public class TableConfig {
      * 缩放值
      */
     private  float zoom = 1;
+    /**
+     * 趋势图字体颜色
+     */
+    private int trendPointTextColor = INVALID_COLOR;
+    private int trendPointTextColor2 = INVALID_COLOR;
+    private int trendPointTextColor3 = INVALID_COLOR;
+    private int trendPointTextColor4 = INVALID_COLOR;
+    private int trendPointTextColor5 = INVALID_COLOR;
+    private int trendPointTextColor6 = INVALID_COLOR;
+    private int trendPointTextColor7 = INVALID_COLOR;
+    private int trendLineColor = INVALID_COLOR;
+    private int trendLineColor2 = INVALID_COLOR;
+    private int trendLineColor3 = INVALID_COLOR;
+    private int trendLineColor4 = INVALID_COLOR;
+    private int trendLineColor5 = INVALID_COLOR;
+    private int trendLineColor6 = INVALID_COLOR;
+    private int trendLineColor7 = INVALID_COLOR;
+    /**
+     * 特定List点内容字体颜色
+     */
+    private int pointListTextColor = INVALID_COLOR;
+    private int pointListTextColor2 = INVALID_COLOR;
+
 
     public FontStyle getContentStyle() {
         if(contentStyle == null){
@@ -427,6 +459,23 @@ public class TableConfig {
         return this;
     }
 
+    public ICellBackgroundFormat<CellInfo> getContentCellTendBackgroundFormat() {
+        return contentCellTendBackgroundFormat;
+    }
+
+    public TableConfig setContentCellTendBackgroundFormat(ICellBackgroundFormat<CellInfo> contentCellTendBackgroundFormat) {
+        this.contentCellTendBackgroundFormat = contentCellTendBackgroundFormat;
+        return this;
+    }
+
+    public ICellBackgroundFormat<CellInfo> getHistogramCellBackgroundFormat() {
+        return histogramCellBackgroundFormat;
+    }
+
+    public void setHistogramCellBackgroundFormat(ICellBackgroundFormat<CellInfo> histogramCellBackgroundFormat) {
+        this.histogramCellBackgroundFormat = histogramCellBackgroundFormat;
+    }
+
     public ICellBackgroundFormat<Integer> getXSequenceCellBgFormat() {
         return XSequenceCellBgFormat;
     }
@@ -619,5 +668,133 @@ public class TableConfig {
     public TableConfig setTextLeftOffset(int textLeftOffset) {
         this.textLeftOffset = textLeftOffset;
         return this;
+    }
+
+    public int getTrendPointTextColor() {
+        return trendPointTextColor;
+    }
+
+    public void setTrendPointTextColor(int trendPointTextColor) {
+        this.trendPointTextColor = trendPointTextColor;
+    }
+
+    public int getPointListTextColor() {
+        return pointListTextColor;
+    }
+
+    public void setPointListTextColor(int pointListTextColor) {
+        this.pointListTextColor = pointListTextColor;
+    }
+
+    public int getPointListTextColor2() {
+        return pointListTextColor2;
+    }
+
+    public void setPointListTextColor2(int pointListTextColor2) {
+        this.pointListTextColor2 = pointListTextColor2;
+    }
+
+    public int getTrendPointTextColor2() {
+        return trendPointTextColor2;
+    }
+
+    public void setTrendPointTextColor2(int trendPointTextColor2) {
+        this.trendPointTextColor2 = trendPointTextColor2;
+    }
+
+    public int getTrendPointTextColor3() {
+        return trendPointTextColor3;
+    }
+
+    public void setTrendPointTextColor3(int trendPointTextColor3) {
+        this.trendPointTextColor3 = trendPointTextColor3;
+    }
+
+    public int getTrendPointTextColor4() {
+        return trendPointTextColor4;
+    }
+
+    public void setTrendPointTextColor4(int trendPointTextColor4) {
+        this.trendPointTextColor4 = trendPointTextColor4;
+    }
+
+    public int getTrendPointTextColor5() {
+        return trendPointTextColor5;
+    }
+
+    public void setTrendPointTextColor5(int trendPointTextColor5) {
+        this.trendPointTextColor5 = trendPointTextColor5;
+    }
+
+    public int getTrendPointTextColor6() {
+        return trendPointTextColor6;
+    }
+
+    public void setTrendPointTextColor6(int trendPointTextColor6) {
+        this.trendPointTextColor6 = trendPointTextColor6;
+    }
+
+    public int getTrendPointTextColor7() {
+        return trendPointTextColor7;
+    }
+
+    public void setTrendPointTextColor7(int trendPointTextColor7) {
+        this.trendPointTextColor7 = trendPointTextColor7;
+    }
+
+    public int getTrendLineColor() {
+        return trendLineColor;
+    }
+
+    public void setTrendLineColor(int trendLineColor) {
+        this.trendLineColor = trendLineColor;
+    }
+
+    public int getTrendLineColor2() {
+        return trendLineColor2;
+    }
+
+    public void setTrendLineColor2(int trendLineColor2) {
+        this.trendLineColor2 = trendLineColor2;
+    }
+
+    public int getTrendLineColor3() {
+        return trendLineColor3;
+    }
+
+    public void setTrendLineColor3(int trendLineColor3) {
+        this.trendLineColor3 = trendLineColor3;
+    }
+
+    public int getTrendLineColor4() {
+        return trendLineColor4;
+    }
+
+    public void setTrendLineColor4(int trendLineColor4) {
+        this.trendLineColor4 = trendLineColor4;
+    }
+
+    public int getTrendLineColor5() {
+        return trendLineColor5;
+    }
+
+    public void setTrendLineColor5(int trendLineColor5) {
+        this.trendLineColor5 = trendLineColor5;
+    }
+
+    public int getTrendLineColor6() {
+        return trendLineColor6;
+    }
+
+    public void setTrendLineColor6(int trendLineColor6) {
+        this.trendLineColor6 = trendLineColor6;
+    }
+
+    public int getTrendLineColor7() {
+        return trendLineColor7;
+    }
+
+    public void setTrendLineColor7(int trendLineColor7) {
+        this.trendLineColor7 = trendLineColor7;
     }
 }
